@@ -1,4 +1,6 @@
 import streamlit as st
+from api_calling import note_generator
+from PIL import Image 
 
 # Header Section
 st.title("Note Summary & Quiz Generator", anchor=False)
@@ -17,6 +19,12 @@ with st.sidebar:
 
     # Display uploaded images
     if uploaded_images:
+        pil_images =[]
+
+        for img in uploaded_images:
+            pil_img = Image.open(img)
+            pil_images.append(pil_img)
+
         st.subheader("Uploaded Images")
         if len(uploaded_images) > 3:
             st.error("Please upload only 3 images.")
@@ -42,13 +50,18 @@ with st.sidebar:
 if pressed:
     if not uploaded_images:
         st.error("You must upload at least 1 image.")
-    elif not selected_difficulty:
+
+    if not selected_difficulty:
         st.error("You must select a difficulty level.")
-    else:
+
+    if uploaded_images:
         # Note
         with st.container(border=True):
             st.subheader("Image Summary", anchor=False)
-            st.text("This note comes from gemini api")
+
+            with st.spinner("Ai is writing for you"):
+                generate_note = note_generator(pil_images)
+                st.markdown(generate_note)
 
         # Audio Transcript
         with st.container(border=True):
