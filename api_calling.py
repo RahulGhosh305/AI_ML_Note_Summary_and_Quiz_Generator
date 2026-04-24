@@ -1,46 +1,50 @@
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import io
 from gtts import gTTS
 
-# Loading the environment variable
+# Load env
 load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY")
 
-api_key = os.environ.get("GEMINI_API_KEY")
-
-#Initialization a Client
-client = genai.Client(api_key=api_key)
+# Configure Gemini
+genai.configure(api_key=api_key)
 
 # Note / Summary Generator
 def note_generator(images):
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
-    prompt = """Summarize the image in clear note format in (maximum 100 words). Use appropriate Markdown to separate and organize different sections."""
+    prompt = """Summarize the image in clear note format (max 100 words).
+Use proper Markdown headings and bullet points."""
 
-    response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=[images, prompt]
-    )
+    response = model.generate_content([prompt, images])
 
     return response.text
 
 
-# Audio Transcription
+# Audio Transcription (Text → Speech actually)
 def audio_transcription(text):
     speech = gTTS(text, lang="en", slow=False)
     audio_buffer = io.BytesIO()
     speech.write_to_fp(audio_buffer)
-    # audio_buffer.seek(0)
-    return audio_buffer 
+    audio_buffer.seek(0)
+    return audio_buffer
+
 
 # Generate Quiz
 def quiz_generator(images, difficulty):
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
-    prompt= f"Generate 3 quizzes base on the {difficulty}. Make sure to add markdown way. Last add also right answer."
+    prompt = f"""Generate 3 quiz questions based on the image.
+Difficulty: {difficulty}
 
-    response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=[images, prompt]
-    )
+Format:
+- Use Markdown
+- Add options (A, B, C, D)
+- Mention correct answer at the end
+"""
+
+    response = model.generate_content([prompt, images])
 
     return response.text
