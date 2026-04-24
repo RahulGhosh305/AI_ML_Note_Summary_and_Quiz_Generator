@@ -1,5 +1,5 @@
 import streamlit as st
-from api_calling import note_generator
+from api_calling import note_generator, audio_transcription, quiz_generator
 from PIL import Image 
 
 # Header Section
@@ -66,9 +66,21 @@ if pressed:
         # Audio Transcript
         with st.container(border=True):
             st.subheader("Audio Transcription", anchor=False)
-            st.text("This note comes from gemini api")
+
+            with st.spinner("Ai is generating speech audio"):
+                generate_note = generate_note.replace("#","")
+                generate_note = generate_note.replace("*","")
+                generate_note = generate_note.replace("-","")
+                generate_note = generate_note.replace("`","")
+
+
+                audio_transcription_buffer = audio_transcription(generate_note)
+
+                st.audio(audio_transcription_buffer)
 
         # Quiz Generate
         with st.container(border=True):
             st.subheader(f"Your {selected_difficulty} Quiz", anchor=False)
-            st.text("This note comes from gemini api")
+            with st.spinner("Ai is generating Quiz"):
+                quiz = quiz_generator(pil_images, selected_difficulty)
+                st.markdown(quiz)
